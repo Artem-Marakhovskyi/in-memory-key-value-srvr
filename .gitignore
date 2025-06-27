@@ -1,0 +1,30 @@
+# Node.js
+node_modules/
+.env
+dist/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# C#
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+bin/
+obj/
+*.exe
+*.dll
+*.pdb
+*.cache
+*.mdb
+*.pidb
+*.svclog
+*.scc
+_ReSharper*/
+.vs/ 
