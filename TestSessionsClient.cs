@@ -9,16 +9,26 @@ public class TestSessionsClient
 {
     private readonly HttpClient _httpClient;
     private readonly string _baseUrl;
+    private readonly string _apiKey;
 
-    public TestSessionsClient(string baseUrl)
+    public TestSessionsClient(string baseUrl, string apiKey)
     {
         _baseUrl = baseUrl.TrimEnd('/');
+        _apiKey = apiKey;
         _httpClient = new HttpClient();
+    }
+
+    private void AddApiKeyHeader(HttpRequestMessage request)
+    {
+        request.Headers.Remove("x-api-key");
+        request.Headers.Add("x-api-key", _apiKey);
     }
 
     public async Task<List<DeviceSession>> GetAllSessionsAsync()
     {
-        var response = await _httpClient.GetAsync($"{_baseUrl}/test-sessions");
+        var request = new HttpRequestMessage(HttpMethod.Get, $"{_baseUrl}/test-sessions");
+        AddApiKeyHeader(request);
+        var response = await _httpClient.SendAsync(request);
         response.EnsureSuccessStatusCode();
         var sessions = await response.Content.ReadFromJsonAsync<List<DeviceSession>>();
         return sessions ?? new List<DeviceSession>();
@@ -26,7 +36,12 @@ public class TestSessionsClient
 
     public async Task<DeviceSession?> PostSessionTreeAsync(string deviceKey, object tree)
     {
-        var response = await _httpClient.PostAsJsonAsync($"{_baseUrl}/test-sessions/{deviceKey}", tree);
+        var request = new HttpRequestMessage(HttpMethod.Post, $"{_baseUrl}/test-sessions/{deviceKey}")
+        {
+            Content = JsonContent.Create(tree)
+        };
+        AddApiKeyHeader(request);
+        var response = await _httpClient.SendAsync(request);
         response.EnsureSuccessStatusCode();
         var session = await response.Content.ReadFromJsonAsync<DeviceSession>();
         return session;
@@ -34,7 +49,9 @@ public class TestSessionsClient
 
     public async Task<JsonElement?> GetSessionTreeAsync(string deviceKey)
     {
-        var response = await _httpClient.GetAsync($"{_baseUrl}/test-sessions/{deviceKey}");
+        var request = new HttpRequestMessage(HttpMethod.Get, $"{_baseUrl}/test-sessions/{deviceKey}");
+        AddApiKeyHeader(request);
+        var response = await _httpClient.SendAsync(request);
         if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
             return null;
         response.EnsureSuccessStatusCode();
