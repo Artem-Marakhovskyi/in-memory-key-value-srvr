@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const os = require('os');
 
 const app = express();
 const port = 3000;
@@ -52,9 +53,21 @@ app.get('/test-sessions/:id', (req, res) => {
   res.json(session.tree);
 });
 
-app.listen(port, () => {
-  console.log(`Server listening at http://localhost:${port}`);
+app.listen(port, '0.0.0.0', () => {
+  const interfaces = os.networkInterfaces();
+  let localIp = 'localhost';
+  for (const name of Object.keys(interfaces)) {
+    for (const iface of interfaces[name]) {
+      if (iface.family === 'IPv4' && !iface.internal) {
+        localIp = iface.address;
+        break;
+      }
+    }
+    if (localIp !== 'localhost') break;
+  }
+  out(`Server started on local IP: http://${localIp}:${port}`);
 }); 
+
 
 const out = (msg) => {
   console.log(`${new Date()}\t${msg}\n`);
